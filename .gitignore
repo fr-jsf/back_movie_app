@@ -1,1 +1,6 @@
+# Config file
 .env
+
+# Python
+__pycache__/
+*.pyc
