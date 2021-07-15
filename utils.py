@@ -16,8 +16,8 @@ def db_connection():
             charset='utf8mb4',
             cursorclass=pymysql.cursors.DictCursor
         )
-    except pymysql.Error as e:
-        print(e)
+    except pymysql.Error as err:
+        print(err)
     return conn
 
 
@@ -30,25 +30,29 @@ def token_required(f):
         if not token:
             return jsonify({
                 'success': False,
-                'message': 'Token is missing!'
+                'message': 'Token manquant'
             }), 401
-        try:
+        try:  # TODO: Faire une condition pour gérér l'expiration des tokens
             data = jwt.decode(
                 token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
-            conn = db_connection()
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT user_tag FROM users WHERE user_tag = %s", data['user_tag'])
-            current_user = cursor.fetchone()
-            if not current_user:
-                return jsonify({
-                    'success': False,
-                    'message': 'Unauthorized Access!'
-                }), 401
+            if current_app.config['ADMIN_USER'] == data['user_tag'] and data['role'] == 'ADMIN':
+                pass
+            else:
+                conn = db_connection()
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT user_tag FROM users WHERE user_tag = %s", data['user_tag'])
+                user = cursor.fetchone()
+                if not user:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Accès interdit'
+                    }), 401
+            current_user = data
         except:
             return jsonify({
                 'success': False,
-                'message': 'Token is invalid!'
+                'message': 'Token invalide'
             }), 401
 
         return f(current_user, *args, **kwargs)
