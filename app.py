@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, request
 from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
 from routes.shows import app as shows
@@ -38,6 +38,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.register_blueprint(shows)
 app.register_blueprint(auth)
 app.register_blueprint(users)
+
+
+@app.route('/')
+def index():
+    return redirect(request.url_root + '/docs')
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=int(app.config['PORT']))
