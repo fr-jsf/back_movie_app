@@ -1,0 +1,422 @@
+swagger: "2.0"
+info:
+  title: "MovieApp"
+  version: "1.0.3"
+  description: API de l’application mobile MovieApp
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    name: "MovieApp API Team"
+    email: "contact@movieapp.fr"
+schemes:
+  - "http"
+host: "api.movieapp.fr"
+basePath: "/"
+produces:
+  - "application/json"
+
+components:
+ parameters:
+   AccessToken:
+      name: "x-access-tokens"
+      in: header
+      description: Access Token.
+      required: true
+      schema:
+        type: string
+
+paths:
+  /users:
+    get:
+      tags:
+        - "Users"
+      summary: Récupérer les informations de tout les utilisateurs
+      parameters:
+        - $ref: '#components/parameters/AccessToken'
+      responses:
+        200:
+          description: Utilisateurs trouvés
+          schema:
+            $ref: "#/definitions/UserFound"
+        401:
+          description: Accès interdit ou token manquant/invalide
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: Aucun utilisateur trouvé
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Erreur interne
+          schema:
+            $ref: "#/definitions/Error"       
+    post:
+      tags:
+        - "Register"
+      summary: Inscrire un utilisateur
+      parameters:
+        - name: user_mail
+          in: formData
+          description: Adresse email de l’utilisateur
+          required: true
+          type: string
+          format: email
+        - name: user_password
+          in: formData
+          description: Mot de passe de l’utilisateur
+          required: true
+          type: string
+        - name: user_confirm_password
+          in: formData
+          description: Mot de passe de l’utilisateur
+          required: true
+          type: string
+        - name: user_name
+          in: formData
+          description: Nom d’usage de l’utilisateur
+          required: true
+          type: string
+        - name: user_tag
+          in: formData
+          description: Pseudo de l’utilisateur
+          required: true
+          type: string
+        - name: user_picture
+          in: formData
+          description: Photo de l’utilisateur
+          required: true
+          type: string
+          enum: ['default.jpg', 'girl.jpg']
+      responses:
+        201:
+          description: L’utilisateur a bien été enregistré
+          schema:
+            $ref: "#/definitions/UserCreated"
+        404:
+          description: Erreur pendant l’inscription
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Erreur interne
+          schema:
+            $ref: "#/definitions/Error"
+
+  /users/{user_tag}:
+    get:
+      tags:
+        - "Users"
+      summary: Récupérer les informations d’un utilisateur
+      parameters:
+        - $ref: '#components/parameters/AccessToken'
+        - name: user_tag
+          in: path
+          description: Pseudo de l’utilisateur
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Utilisateur trouvé
+          schema:
+            $ref: "#/definitions/UserInfos"
+        403:
+          description: Droits insuffisants
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: Utilisateur non trouvé
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Erreur interne
+          schema:
+            $ref: "#/definitions/Error"
+
+  /auth:
+    post:
+      tags:
+        - "Auth"
+      summary: Authentifier un utilisateur
+      parameters:
+        - name: user_mail
+          in: formData
+          description: Adresse email de l’utilisateur
+          required: true
+          type: string
+          format: email
+        - name: user_password
+          in: formData
+          description: Mot de passe de l’utilisateur
+          required: true
+          type: string
+      responses:
+        200:
+          description: L’utilisateur a bien été connecté
+          schema:
+            $ref: "#/definitions/UserLogin"
+        401:
+          description: Accès interdit
+          schema:
+            $ref: "#/definitions/Error"
+        403:
+          description: Identifiants incorrects
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: Données manquantes
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Erreur interne
+          schema:
+            $ref: "#/definitions/Error"
+  
+  /verify:
+    post:
+      tags:
+        - "Register"
+      summary: "Valider les données fournies par l’utilisateur lors de l’inscription"
+      parameters:
+        - name: auth_step
+          in: query
+          description: Étape de l’authentification (0 ou 1)
+          required: true
+          type: string
+          enum: ["0", "1"]
+        - name: user_mail
+          in: formData
+          description: Adresse email de l’utilisateur - Requis pour l'étape 0
+          required: false
+          type: string
+          format: email
+        - name: user_password
+          in: formData
+          description: Mot de passe de l’utilisateur - Requis pour l'étape 1
+          required: false
+          type: string
+        - name: user_confirm_password
+          in: formData
+          description: Mot de passe de l’utilisateur - Requis pour l'étape 1
+          required: false
+          type: string
+        - name: user_name
+          in: formData
+          description: Nom d’usage de l’utilisateur - Requis pour l'étape 0
+          required: false
+          type: string
+        - name: user_tag
+          in: formData
+          description: Pseudo de l’utilisateur - Requis pour l'étape 0
+          required: false
+          type: string
+        - name: user_picture
+          in: formData
+          description: Photo de l’utilisateur - Requis pour l'étape 0
+          required: false
+          type: string
+          enum: ['default.jpg', 'girl.jpg']
+      responses:
+        200:
+          description: Les données sont correctes
+          schema:
+            $ref: "#/definitions/VerifyData"
+        404:
+          description: Données manquantes ou incorrectes
+          schema:
+            $ref: "#/definitions/VerifyData"
+        500:
+          description: Erreur interne
+          schema:
+            $ref: "#/definitions/Error"
+
+  /shows:
+    get:
+      tags:
+        - "Shows"
+      summary: Voir ses shows favoris
+      parameters:
+        - $ref: '#components/parameters/AccessToken'
+      responses:
+        200:
+          description: Shows trouvés
+          schema:
+            $ref: "#/definitions/ShowsFound"
+        401:
+          description: Accès interdit ou token manquant/invalide
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: Aucun show trouvé
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Erreur interne
+          schema:
+            $ref: "#/definitions/Error"
+  
+  /shows/{show_id}:
+    post:
+      tags:
+        - "Shows"
+      summary: Ajouter un show à ses favoris
+      parameters:
+        - $ref: '#components/parameters/AccessToken'
+        - name: show_id
+          in: path
+          description: ID du show
+          required: true
+          schema:
+            type: string
+        - name: show_type
+          in: query
+          description: Type du show
+          required: true
+          type: string
+          enum: ['SERIE', 'MOVIE']
+      responses:
+        201:
+          description: Show aimé
+          schema:
+            $ref: "#/definitions/Error"
+        401:
+          description: Accès interdit ou token manquant/invalide
+          schema:
+            $ref: "#/definitions/Error"
+        404:
+          description: Show déjà aimé ou inexistant
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Erreur interne
+          schema:
+            $ref: "#/definitions/Error"
+       
+definitions:
+
+  UserInfos:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+      data:
+        type: object
+        properties:
+          user_creation_date:
+            type: string
+            format: date-time
+          user_mail:
+            type: string
+            format: email
+          user_name:
+            type: string
+          user_password:
+            type: string
+            format: bcrypt
+          user_picture:
+            type: string
+            enum: ['default.jpg', 'girl.jpg']
+          user_tag:
+            type: string
+
+  UserFound:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            user_creation_date:
+              type: string
+              format: date-time
+            user_mail:
+              type: string
+              format: email
+            user_name:
+              type: string
+            user_password:
+              type: string
+              format: bcrypt
+            user_picture:
+              type: string
+              enum: ['default.jpg', 'girl.jpg']
+            user_tag:
+              type: string
+
+  ShowsFound:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            show_id:
+              type: integer
+            show_name:
+              type: string
+            show_tag:
+              type: integer
+            show_type:
+              type: string
+              enum: ['SERIE', 'MOVIE']
+            user_tag:
+              type: string
+
+  UserLogin:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+      data:
+        type: string
+
+  UserCreated:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+      data:
+        type: object
+        properties:
+          user_mail:
+            type: string
+            format: email
+          user_name:
+            type: string
+          user_picture:
+            type: string
+            enum: ['default.jpg', 'girl.jpg']
+          user_tag:
+            type: string
+
+  VerifyData:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string
+      data: 
+        type: object
+
+  Error:
+    type: object
+    properties:
+      success:
+        type: boolean
+      message:
+        type: string

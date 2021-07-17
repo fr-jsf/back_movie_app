@@ -11,7 +11,7 @@ load_dotenv(dotenv_path='.env')
 app = Flask(__name__)
 
 SWAGGER_URL = '/docs'
-API_URL = '/static/swagger.json'
+API_URL = '/static/swagger.yaml'
 SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
