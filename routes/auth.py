@@ -64,7 +64,7 @@ class FirstStep(Schema):
     def validate_input(self, data, **kwargs):
         errors = dict()
         pattern = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
-        pictures = ['default.jpg', 'girl.jpg']
+        pictures = current_app.config['USER_PICTURES']
         if not re.fullmatch(pattern, data['user_mail']):
             errors['user_mail'] = ['Veuillez saisir une adresse email valide']
         if len(data['user_tag']) not in range(3, 25):

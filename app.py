@@ -21,6 +21,9 @@ SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
 )
 app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 
+PICTURES_LIST = ['ToyFaces_Colored_BG_47', 'ToyFaces_Colored_BG_8',
+                 'ToyFaces_Colored_BG_29', 'ToyFaces_Colored_BG_32', 'ToyFaces_Colored_BG_37', 'ToyFaces_Colored_BG_49', 'ToyFaces_Colored_BG_56', 'ToyFaces_Colored_BG_59']
+
 app.url_map.strict_slashes = False
 app.config['PORT'] = os.getenv('APP_PORT')
 app.config['DOMAIN'] = os.getenv('APP_DOMAIN')
@@ -35,6 +38,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['ADMIN_USER'] = os.getenv('ADMIN_USER')
 app.config['ADMIN_PASS'] = os.getenv('ADMIN_PASS')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['USER_PICTURES'] = PICTURES_LIST
 app.register_blueprint(shows)
 app.register_blueprint(auth)
 app.register_blueprint(users)

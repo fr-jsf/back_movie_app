@@ -98,3 +98,33 @@ def register():
             'success': False,
             'message': 'Erreur interne'
         }), 500
+
+
+@app.route('/users/<string:tag>', methods=['DELETE'])
+@token_required
+def deleteUser(current_user, tag):
+    if current_user['role'] != 'ADMIN' and not (current_user['user_tag'] == tag and current_user['role'] == 'USER'):
+        return jsonify({
+            'success': False,
+            'message': 'Droits insuffisants'
+        }), 403
+    try:
+        conn = db_connection()
+        cursor = conn.cursor()
+        result = cursor.execute("DELETE FROM users WHERE user_tag = %s", tag)
+        conn.commit()
+        if result == 0:
+            return jsonify({
+                'success': True,
+                'message': f'L’utilisateur {tag} n’existe pas'
+            }), 404
+        return jsonify({
+            'success': True,
+            'message': f'L’utilisateur {tag} a bien été supprimé'
+        }), 204
+    except Exception as err:
+        print(err)
+        return jsonify({
+            'success': False,
+            'message': 'Erreur interne'
+        }), 500
