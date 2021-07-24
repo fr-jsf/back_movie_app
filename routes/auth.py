@@ -32,7 +32,7 @@ def login():
             "SELECT user_tag, user_password FROM users WHERE user_mail = %s", user_mail)
         user = cursor.fetchone()
         if not user:
-            return jsonify({'success': False, 'message': 'Accès interdit'}), 401
+            return jsonify({'success': False, 'message': 'Adresse email ou mot de passe incorrect'}), 401
         if check_password_hash(user['user_password'], user_password):
             token = jwt.encode({
                 'user_tag': user['user_tag'],
@@ -40,7 +40,7 @@ def login():
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(weeks=8)
             }, current_app.config['SECRET_KEY'], algorithm="HS256")
             return jsonify({'success': True, 'message': 'Token créée', 'data': token}), 200
-        return jsonify({'success': False, 'message': 'Nom d’utilisateur ou mot de passe incorrect'}), 403
+        return jsonify({'success': False, 'message': 'Adresse email ou mot de passe incorrect'}), 403
     except Exception as err:
         print(err)
         return jsonify({'success': False, 'message': 'Erreur interne'}), 500
@@ -148,7 +148,7 @@ def secondStep():
         result = schema.dump(user)
         if result['user_password'] != result['user_confirm_password']:
             raise ValidationError(
-                {'error': ['Ces mots de passe ne correspondent pas']})
+                {'user_confirm_password': ['Ces mots de passe ne correspondent pas']})
         return jsonify({
             'success': True,
             'message': 'Données correctes',
