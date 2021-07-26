@@ -16,10 +16,17 @@ def getShows(current_user):
                 'success': False,
                 'message': 'Seul un utilisateur peut voir ses shows favoris'
             }), 401
+        page = request.args.get('page', default=0, type=int)
+        page = int(page) * int(current_app.config['NB_ELEM_BY_PAGE'])
+        show_id = request.args.get('show_id', default='%', type=int)
+        show_type = request.args.get('show_type', type=str)
+        if show_type not in ['MOVIE', 'SERIE']:
+            show_type = '%'
         conn = db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT * FROM shows NATURAL JOIN liked WHERE user_tag = %s", current_user['user_tag'])
+            "SELECT * FROM shows NATURAL JOIN liked WHERE user_tag = %s AND show_type LIKE %s AND show_id LIKE %s LIMIT %s OFFSET %s",
+            [current_user['user_tag'], show_type, show_id, int(current_app.config['NB_ELEM_BY_PAGE']), page])
         shows = cursor.fetchall()
         if len(shows) == 0:
             return jsonify({
