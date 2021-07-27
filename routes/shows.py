@@ -53,7 +53,7 @@ def like(current_user, id):
         if not current_user['role'] == 'USER':
             return jsonify({
                 'success': False,
-                'message': 'Seul un utilisateur peut like un show'
+                'message': 'Seul un utilisateur peut aimer un show'
             }), 401
         show_type = request.args.to_dict().get('show_type')
         types = ['MOVIE', 'SERIE']
@@ -112,6 +112,52 @@ def like(current_user, id):
             'success': True,
             'message': f'{user_tag} vient d’aimer {pre.lower()} avec l’ID {id}'
         }), 201
+    except Exception as err:
+        print(err)
+        return jsonify({
+            'success': False,
+            'message': 'Erreur interne'
+        }), 500
+
+
+@app.route('/shows/<string:id>', methods=['DELETE'])
+@token_required
+def deleteShow(current_user, id):
+    try:
+        if not current_user['role'] == 'USER':
+            return jsonify({
+                'success': False,
+                'message': 'Seul un utilisateur peut supprimer un show'
+            }), 401
+        show_type = request.args.to_dict().get('show_type')
+        types = ['MOVIE', 'SERIE']
+        user_tag = current_user['user_tag']
+        if not show_type:
+            return jsonify({
+                'success': False,
+                'message': 'Veuillez spécifier le paramètre show_type'
+            }), 404
+        if show_type.upper() not in types:
+            return jsonify({
+                'success': False,
+                'message': 'Le paramètre show_type doit être égale à MOVIE ou SERIE'
+            }), 404
+        pre = ('Le film' if show_type.upper() == 'MOVIE' else 'La série')
+        conn = db_connection()
+        cursor = conn.cursor()
+        result = cursor.execute(
+            "DELETE FROM liked WHERE user_tag = %s AND show_tag IN (SELECT show_tag FROM shows WHERE show_type = %s AND show_id = %s)",
+            [user_tag, show_type, id])
+        conn.commit()
+        if result == 0:
+            return jsonify({
+                'success': False,
+                'message': f'L’utilisateur {user_tag} n’aime pas {pre.lower()} avec l’ID {id}'
+            }), 404
+        return jsonify({
+            'success': True,
+            'message': f'L’utilisateur {user_tag} a bien retiré de ses favoris {pre.lower()} avec l’ID {id}'
+        }), 204
     except Exception as err:
         print(err)
         return jsonify({

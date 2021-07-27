@@ -115,7 +115,7 @@ def deleteUser(current_user, tag):
         conn.commit()
         if result == 0:
             return jsonify({
-                'success': True,
+                'success': False,
                 'message': f'L’utilisateur {tag} n’existe pas'
             }), 404
         return jsonify({
