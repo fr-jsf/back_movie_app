@@ -25,7 +25,7 @@ def getShows(current_user):
         conn = db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT * FROM shows NATURAL JOIN liked WHERE user_tag = %s AND show_type LIKE %s AND show_id LIKE %s LIMIT %s OFFSET %s",
+            "SELECT * FROM shows NATURAL JOIN liked WHERE user_tag = %s AND show_type LIKE %s AND show_id LIKE %s ORDER BY liked_datetime DESC LIMIT %s OFFSET %s",
             [current_user['user_tag'], show_type, show_id, int(current_app.config['NB_ELEM_BY_PAGE']), page])
         shows = cursor.fetchall()
         if len(shows) == 0:
@@ -105,7 +105,7 @@ def like(current_user, id):
                 'success': False,
                 'message': f'Vous aimez déjà {pre.lower()} avec l’ID {id}'
             }), 404
-        cursor.execute("INSERT INTO liked VALUES (%s, %s)",
+        cursor.execute("INSERT INTO liked VALUES (%s, %s, NOW())",
                        [user_tag, show_tag])
         conn.commit()
         return jsonify({

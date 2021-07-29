@@ -21,6 +21,7 @@ CREATE TABLE shows (
 CREATE TABLE liked (
 	user_tag VARCHAR(25),
 	show_tag INT,
+	liked_time DATETIME NOT NULL,
 	CONSTRAINT fk_users FOREIGN KEY (user_tag) REFERENCES users(user_tag) ON DELETE CASCADE ON UPDATE CASCADE,
 	CONSTRAINT fk_shows FOREIGN KEY (show_tag) REFERENCES shows(show_tag) ON DELETE CASCADE ON UPDATE CASCADE
 );
