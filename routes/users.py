@@ -11,56 +11,40 @@ app = Blueprint('users', __name__)
 @token_required
 def getUsers(current_user):
     try:
-        if current_user['role'] != 'ADMIN':
+        conn = db_connection()
+        cursor = conn.cursor()
+        if current_user['role'] == 'USER':
+            cursor.execute(
+                "SELECT * FROM users WHERE user_tag = %s", current_user['user_tag'])
+            user = cursor.fetchone()
+            if len(user) == 0:
+                return jsonify({
+                    'success': True,
+                    'message': 'Aucun utilisateur trouvé'
+                }), 404
+            return jsonify({
+                'success': True,
+                'message': 'Utilisateur trouvé',
+                'data': user
+            }), 200
+        elif current_user['role'] == 'ADMIN':
+            cursor.execute("SELECT * FROM users")
+            users = cursor.fetchall()
+            if len(users) == 0:
+                return jsonify({
+                    'success': True,
+                    'message': 'Aucun utilisateur trouvé'
+                }), 404
+            return jsonify({
+                'success': True,
+                'message': 'Utilisateurs trouvé(s)',
+                'data': users
+            }), 200
+        else:
             return jsonify({
                 'success': False,
                 'message': 'Droits insuffisants'
             }), 401
-        conn = db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users")
-        users = cursor.fetchall()
-        if len(users) == 0:
-            return jsonify({
-                'success': True,
-                'message': 'Aucun utilisateur trouvé'
-            }), 404
-        return jsonify({
-            'success': True,
-            'message': 'Utilisateurs trouvé(s)',
-            'data': users
-        }), 200
-    except Exception as err:
-        print(err)
-        return jsonify({
-            'success': False,
-            'message': 'Erreur interne'
-        }), 500
-
-
-@app.route('/users/<string:tag>')
-@token_required
-def getUser(current_user, tag):
-    if current_user['role'] != 'ADMIN' and not (current_user['user_tag'] == tag and current_user['role'] == 'USER'):
-        return jsonify({
-            'success': False,
-            'message': 'Droits insuffisants'
-        }), 403
-    try:
-        conn = db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE user_tag = %s", tag)
-        user = cursor.fetchone()
-        if len(user) == 0:
-            return jsonify({
-                'success': True,
-                'message': 'Aucun utilisateur trouvé'
-            }), 404
-        return jsonify({
-            'success': True,
-            'message': 'Utilisateur trouvé',
-            'data': user
-        }), 200
     except Exception as err:
         print(err)
         return jsonify({
