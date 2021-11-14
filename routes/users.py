@@ -84,6 +84,16 @@ def register():
         }), 500
 
 
+@app.route('/users/<string:tag>', methods=['PATCH'])
+@token_required
+def updateUser(current_user, tag):
+    # TODO: Implement update user route
+    return jsonify({
+        'success': True,
+        'message': 'L’utilisateur a bien modifié ses données'
+    })
+
+
 @app.route('/users/<string:tag>', methods=['DELETE'])
 @token_required
 def deleteUser(current_user, tag):

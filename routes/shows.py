@@ -73,7 +73,7 @@ def getShow(id):
         return jsonify({
             'success': False,
             'message': f'{pre} avec l’ID {id} n’existe pas'
-        })
+        }), 400
     characters = requests.get(links[show_type.upper()][1], params={
         'key': current_app.config['KEY'],
         'id': id
@@ -87,8 +87,8 @@ def getShow(id):
             'key': current_app.config['KEY'],
             'id': character['id'],
             'type': show_type.lower(),
-            'width': 124,
-            'height': 124
+            'width': 248,
+            'height': 248
         }).url
         images.append({
             'name': character['actor'],
