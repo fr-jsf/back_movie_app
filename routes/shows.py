@@ -46,6 +46,59 @@ def getShows(current_user):
         }), 500
 
 
+@app.route("/shows/<string:id>")
+def getShow(id):
+    show_type = request.args.to_dict().get('show_type')
+    types = ['MOVIE', 'SERIE']
+    links = {
+        'MOVIE': ['https://api.betaseries.com/movies/movie', 'https://api.betaseries.com/movies/characters'],
+        'SERIE': ['https://api.betaseries.com/shows/display', 'https://api.betaseries.com/shows/characters']
+    }
+    if not show_type:
+        return jsonify({
+            'success': False,
+            'message': 'Veuillez spécifier le paramètre show_type'
+        }), 404
+    if show_type.upper() not in types:
+        return jsonify({
+            'success': False,
+            'message': 'Le paramètre show_type doit être égale à MOVIE ou SERIE'
+        }), 404
+    search = requests.get(links[show_type.upper()][0], params={
+        'key': current_app.config['KEY'],
+        'id': id
+    })
+    pre = ('Le film' if show_type.upper() == 'MOVIE' else 'La série')
+    if search.status_code == 400:
+        return jsonify({
+            'success': False,
+            'message': f'{pre} avec l’ID {id} n’existe pas'
+        })
+    characters = requests.get(links[show_type.upper()][1], params={
+        'key': current_app.config['KEY'],
+        'id': id
+    })
+    result = search.json()
+    if characters.status_code == 400:
+        return jsonify(result), 200
+    images = []
+    for character in characters.json()['characters']:
+        image = requests.get('https://api.betaseries.com/pictures/characters', params={
+            'key': current_app.config['KEY'],
+            'id': character['id'],
+            'type': show_type.lower(),
+            'width': 124,
+            'height': 124
+        }).url
+        images.append({
+            'name': character['actor'],
+            'role': character['name'],
+            'picture': image
+        })
+    result['actors'] = images
+    return jsonify(result), 200
+
+
 @app.route("/shows/<string:id>", methods=['POST'])
 @token_required
 def like(current_user, id):
@@ -122,7 +175,7 @@ def like(current_user, id):
 
 @app.route('/shows/<string:id>', methods=['DELETE'])
 @token_required
-def deleteShow(current_user, id):
+def dislike(current_user, id):
     try:
         if not current_user['role'] == 'USER':
             return jsonify({

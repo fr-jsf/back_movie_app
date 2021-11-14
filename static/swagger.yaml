@@ -85,7 +85,6 @@ paths:
           description: Photo de l’utilisateur
           required: true
           type: string
-          enum: ['default.jpg', 'girl.jpg']
       responses:
         201:
           description: L’utilisateur a bien été enregistré
